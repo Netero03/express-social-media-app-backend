@@ -1,0 +1,40 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "index.js",
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "dist/**"
+                ]
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/auth/signup",
+            "dest": "index.js"
+        },
+        {
+            "src": "/api/auth/login",
+            "dest": "index.js"
+        },
+        {
+            "src": "/api/auth/google",
+            "dest": "index.js"
+        },
+        {
+            "src": "/api/profile/:userId",
+            "dest": "index.js"
+        },
+        {
+            "src": "/api/qrcode/:userId",
+            "dest": "index.js"
+        },
+        {
+            "src": "/api/:path*",
+            "dest": "index.js"
+        }
+    ]
+}
