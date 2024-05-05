@@ -193,7 +193,7 @@ app.get('/api/qrcode/:userId', async (req, res) => {
 });
 
 // MongoDB connection
-mongoose.connect('mongodb+srv://jatinletsgo:8ZzwK33vZ076iqJF@cluster0.97awjld.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
