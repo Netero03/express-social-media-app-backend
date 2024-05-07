@@ -1,7 +1,18 @@
 // index.js (Entry point of your backend)
 
 // Import the functions you need from the SDKs you need
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import qr from 'qrcode';
+import { User } from './models/user.js';
 import { initializeApp } from "firebase/app";
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 const firebaseConfig = {
   apiKey: "AIzaSyDRlvBeFQdoizNuyKbfbWoIRxNcaGUcarw",
@@ -14,16 +25,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const firebase = initializeApp(firebaseConfig);
-
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import qr from 'qrcode';
-import { User } from './models/user.js';
-
 
 const app = express();
 
@@ -101,13 +102,23 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Google login route
+import { OAuth2Client } from 'google-auth-library';
+
+// Initialize OAuth client
+const client = new OAuth2Client('1055912910856-bmqmld04154ktf81cv78ujttogscultn.apps.googleusercontent.com');
+
+// Google login route
 app.post('/api/auth/google', async (req, res) => {
   try {
     const { idToken } = req.body;
 
     // Verify Google ID token
-    const decodedToken = await firebase.auth().verifyIdToken(idToken);
-    const { email, name } = decodedToken;
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: '1055912910856-bmqmld04154ktf81cv78ujttogscultn.apps.googleusercontent.com',
+    });
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -121,13 +132,14 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ email }, 'your_secret_key', { expiresIn: '1h' });
+    const token = jwt.sign({ email }, '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', { expiresIn: '1h' });
     res.status(200).json({ token });
   } catch (error) {
     console.error('Error logging in with Google:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 // Get user profile route
 app.get('/api/profile/:userId', async (req, res) => {
@@ -192,8 +204,9 @@ app.get('/api/qrcode/:userId', async (req, res) => {
   }
 });
 
+const DB=process.env.MONGO_URI;
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI,{dbName: 'SocialMediaApp', })
+mongoose.connect(DB,{dbName: 'SocialMediaApp', })
   .then(() => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
